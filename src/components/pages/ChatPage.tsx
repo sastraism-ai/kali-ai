@@ -60,6 +60,8 @@ function createInitialThreads(userName: string): ChatThread[] {
   ]
 }
 
+const MOBILE_BREAKPOINT = 1024
+
 export function ChatPage({
   onBackHome,
   onLogout,
@@ -70,11 +72,29 @@ export function ChatPage({
   const [activeThreadId, setActiveThreadId] = useState('new-chat')
   const [draft, setDraft] = useState('')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const messagesRef = useRef<HTMLDivElement | null>(null)
 
   const activeThread = threads.find((thread) => thread.id === activeThreadId) ?? threads[0]
   const showIntroState = activeThread.messages.length === 0 && !activeThread.locked
+
+  useEffect(() => {
+    const syncViewport = () => {
+      const mobile = window.innerWidth < MOBILE_BREAKPOINT
+      setIsMobile(mobile)
+      setMobileSidebarOpen((current) => (mobile ? current : false))
+      if (mobile) {
+        setSidebarCollapsed(false)
+      }
+    }
+
+    syncViewport()
+    window.addEventListener('resize', syncViewport)
+
+    return () => window.removeEventListener('resize', syncViewport)
+  }, [])
 
   useEffect(() => {
     setThreads((currentThreads) => {
@@ -120,8 +140,15 @@ export function ChatPage({
     })
   }, [activeThreadId, activeThread.messages.length])
 
+  const closeMobileSidebar = () => {
+    if (isMobile) {
+      setMobileSidebarOpen(false)
+    }
+  }
+
   const handleSelectThread = (threadId: string) => {
     setActiveThreadId(threadId)
+    closeMobileSidebar()
   }
 
   const handleDeleteThread = (threadId: string) => {
@@ -152,6 +179,7 @@ export function ChatPage({
     ])
     setActiveThreadId(newThread.id)
     setDraft('')
+    closeMobileSidebar()
   }
 
   const handleSendMessage = () => {
@@ -192,30 +220,48 @@ export function ChatPage({
     setDraft('')
   }
 
+  const showDesktopCollapsed = !isMobile && sidebarCollapsed
+  const desktopGridColumns = showDesktopCollapsed ? '88px minmax(0,1fr)' : '280px minmax(0,1fr)'
+
   return (
-    <div className="h-screen overflow-hidden bg-white text-[#171717]">
-      <main className="grid h-screen overflow-hidden transition-all duration-300 ease-in-out" style={{ gridTemplateColumns: sidebarCollapsed ? '88px 1fr' : '280px 1fr' }}>
-        <aside className="flex h-screen flex-col overflow-hidden border-r border-[#E5E5E5] bg-white">
+    <div className="relative h-[100dvh] overflow-hidden bg-white text-[#171717]">
+      {isMobile && mobileSidebarOpen ? (
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          onClick={() => setMobileSidebarOpen(false)}
+          className="absolute inset-0 z-30 bg-black/30 lg:hidden"
+        />
+      ) : null}
+
+      <main
+        className="relative h-[100dvh] overflow-hidden transition-all duration-300 ease-in-out lg:grid"
+        style={isMobile ? undefined : { gridTemplateColumns: desktopGridColumns }}
+      >
+        <aside
+          className={`absolute inset-y-0 left-0 z-40 flex w-[min(86vw,320px)] flex-col overflow-hidden border-r border-[#E5E5E5] bg-white transition-transform duration-300 ease-in-out lg:static lg:z-auto lg:w-auto lg:translate-x-0 ${
+            isMobile ? (mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full') : ''
+          }`}
+        >
           <button
             type="button"
             onClick={onBackHome}
-            className={`mx-4 mt-4 hover:cursor-pointer flex items-center gap-3 rounded-2xl border border-[#E5E5E5] bg-white px-3 py-3 text-left transition hover:border-[#FACC15] hover:bg-[#FEF9C3] ${
-              sidebarCollapsed ? 'justify-center px-0' : ''
+            className={`mx-4 mt-4 flex items-center gap-3 rounded-2xl border border-[#E5E5E5] bg-white px-3 py-3 text-left transition hover:cursor-pointer hover:border-[#FACC15] hover:bg-[#FEF9C3] ${
+              showDesktopCollapsed ? 'justify-center px-0' : ''
             }`}
           >
             <img src={logo} alt="KALI" className="h-9 w-9 object-contain" />
-            {!sidebarCollapsed ? (<>
-              <span className="bg-gradient-to-tr from-[#CA8A04] via-[#FACC15] to-[#A16207] bg-clip-text text-base font-semibold text-transparent">
-                KALI
-              </span>
-              <span className='text-xs text-gray-500'>
-              for the better future
-              </span>
-            </>
+            {!showDesktopCollapsed ? (
+              <>
+                <span className="bg-gradient-to-tr from-[#CA8A04] via-[#FACC15] to-[#A16207] bg-clip-text text-base font-semibold text-transparent">
+                  KALI
+                </span>
+                <span className="text-xs text-gray-500">for the better future</span>
+              </>
             ) : null}
           </button>
 
-          {sidebarCollapsed ? (
+          {showDesktopCollapsed ? (
             <div className="px-4 py-4">
               <div className="rounded-[1.4rem] border border-[#E5E5E5] bg-[#FCFCFC] p-2">
                 <button
@@ -229,7 +275,7 @@ export function ChatPage({
                 <div className="mx-2 border-t border-[#E5E5E5]" />
                 <button
                   type="button"
-                  onClick={() => setSidebarCollapsed((current) => !current)}
+                  onClick={() => setSidebarCollapsed(false)}
                   title="Expand sidebar"
                   className="mt-2 flex h-11 w-full items-center justify-center rounded-xl text-[#404040] transition hover:cursor-pointer hover:bg-[#FEF9C3]"
                 >
@@ -246,17 +292,27 @@ export function ChatPage({
               >
                 New chat
               </button>
-              <button
-                type="button"
-                onClick={() => setSidebarCollapsed((current) => !current)}
-                className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#E5E5E5] bg-white text-[#404040] transition hover:cursor-pointer hover:border-[#FACC15] hover:bg-[#FEF9C3]"
-              >
-                <PanelLeftClose size={18} />
-              </button>
+              {isMobile ? (
+                <button
+                  type="button"
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#E5E5E5] bg-white text-[#404040] transition hover:cursor-pointer hover:border-[#FACC15] hover:bg-[#FEF9C3] lg:hidden"
+                >
+                  <X size={18} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setSidebarCollapsed(true)}
+                  className="hidden h-11 w-11 items-center justify-center rounded-2xl border border-[#E5E5E5] bg-white text-[#404040] transition hover:cursor-pointer hover:border-[#FACC15] hover:bg-[#FEF9C3] lg:flex"
+                >
+                  <PanelLeftClose size={18} />
+                </button>
+              )}
             </div>
           )}
 
-          {!sidebarCollapsed ? (
+          {!showDesktopCollapsed ? (
             <div className="px-4 pb-3">
               <p className="text-[11px] font-semibold tracking-[0.18em] text-[#8A7A62] uppercase">
                 Chats
@@ -280,19 +336,19 @@ export function ChatPage({
                   <button
                     type="button"
                     onClick={() => handleSelectThread(thread.id)}
-                    className={`w-full hover:cursor-pointer rounded-2xl px-3.5 py-3 text-left text-sm leading-5 ${
+                    className={`w-full rounded-2xl px-3.5 py-3 text-left text-sm leading-5 hover:cursor-pointer ${
                       isActive ? 'text-[#171717]' : 'text-[#525252]'
                     }`}
                   >
-                    {sidebarCollapsed ? (
+                    {showDesktopCollapsed ? (
                       <div className="flex justify-center">
                         <span className="h-2.5 w-2.5 rounded-full bg-[#CA8A04]" />
                       </div>
                     ) : (
                       <div className="flex items-center justify-between gap-3 pr-8">
-                        <span>{thread.title}</span>
+                        <span className="truncate">{thread.title}</span>
                         {thread.locked ? (
-                          <span className="rounded-full border border-[#E5E5E5] bg-white px-2 py-1 text-[10px] font-semibold tracking-[0.14em] text-[#8A7A62] uppercase">
+                          <span className="shrink-0 rounded-full border border-[#E5E5E5] bg-white px-2 py-1 text-[10px] font-semibold tracking-[0.14em] text-[#8A7A62] uppercase">
                             Notes
                           </span>
                         ) : null}
@@ -300,7 +356,7 @@ export function ChatPage({
                     )}
                   </button>
 
-                  {!sidebarCollapsed && thread.id !== 'new-chat' && thread.id !== 'product-notes' ? (
+                  {!showDesktopCollapsed && thread.id !== 'new-chat' && thread.id !== 'product-notes' ? (
                     <button
                       type="button"
                       aria-label={`Delete ${thread.title}`}
@@ -308,7 +364,7 @@ export function ChatPage({
                         event.stopPropagation()
                         handleDeleteThread(thread.id)
                       }}
-                      className="absolute hover:cursor-pointer top-1/2 right-2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[#8A7A62] opacity-0 transition hover:bg-white hover:text-[#171717] group-hover:opacity-100"
+                      className="absolute top-1/2 right-2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[#8A7A62] opacity-100 transition hover:cursor-pointer hover:bg-white hover:text-[#171717] lg:opacity-0 lg:group-hover:opacity-100"
                     >
                       <X size={14} />
                     </button>
@@ -320,7 +376,7 @@ export function ChatPage({
 
           <div className="border-t border-[#E5E5E5] p-4">
             <div className="flex items-center justify-between gap-3">
-              {sidebarCollapsed ? (
+              {showDesktopCollapsed ? (
                 <div className="flex w-full justify-center">
                   {userPhotoURL ? (
                     <img
@@ -336,7 +392,7 @@ export function ChatPage({
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     {userPhotoURL ? (
                       <img
                         src={userPhotoURL}
@@ -348,23 +404,23 @@ export function ChatPage({
                         {userName.trim().charAt(0).toUpperCase() || 'N'}
                       </div>
                     )}
-                    <p className="text-sm font-medium text-[#171717]">{userName}</p>
+                    <p className="truncate text-sm font-medium text-[#171717]">{userName}</p>
                   </div>
                   <button
                     type="button"
                     onClick={onLogout}
-                    className="flex h-10 w-10 hover:cursor-pointer items-center justify-center rounded-xl border border-[#E5E5E5] bg-white text-[#6d665b] transition hover:border-[#FACC15] hover:bg-[#FEF9C3]"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E5E5E5] bg-white text-[#6d665b] transition hover:cursor-pointer hover:border-[#FACC15] hover:bg-[#FEF9C3]"
                   >
                     <LogOut size={16} />
                   </button>
                 </>
               )}
             </div>
-            {sidebarCollapsed ? (
+            {showDesktopCollapsed ? (
               <button
                 type="button"
                 onClick={onLogout}
-                className="mt-3 hover:cursor-pointer flex w-full items-center justify-center rounded-xl border border-[#E5E5E5] bg-white py-2 text-[#6d665b] transition hover:border-[#FACC15] hover:bg-[#FEF9C3]"
+                className="mt-3 flex w-full items-center justify-center rounded-xl border border-[#E5E5E5] bg-white py-2 text-[#6d665b] transition hover:cursor-pointer hover:border-[#FACC15] hover:bg-[#FEF9C3]"
               >
                 <LogOut size={16} />
               </button>
@@ -372,25 +428,36 @@ export function ChatPage({
           </div>
         </aside>
 
-        <section className="flex h-screen min-h-0 flex-col overflow-hidden bg-white">
-          <header className="flex items-center justify-between border-b border-[#E5E5E5] px-6 py-4 md:px-8">
-            <div className="rounded-full border border-[#E5E5E5] bg-white px-4 py-2 text-xs font-semibold tracking-[0.16em] text-[#817767] uppercase">
-              {activeThread.locked ? 'Model notes' : 'Workspace'}
+        <section className="flex h-[100dvh] min-h-0 flex-col overflow-hidden bg-white">
+          <header className="flex items-center justify-between gap-3 border-b border-[#E5E5E5] px-4 py-3 sm:px-6 md:px-8 md:py-4">
+            <div className="flex min-w-0 items-center gap-3">
+              {isMobile ? (
+                <button
+                  type="button"
+                  onClick={() => setMobileSidebarOpen(true)}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E5E5E5] bg-white text-[#404040] transition hover:cursor-pointer hover:border-[#FACC15] hover:bg-[#FEF9C3] lg:hidden"
+                >
+                  <PanelLeftOpen size={18} />
+                </button>
+              ) : null}
+              <div className="rounded-full border border-[#E5E5E5] bg-white px-3 py-2 text-[11px] font-semibold tracking-[0.16em] text-[#817767] uppercase sm:px-4 sm:text-xs">
+                {activeThread.locked ? 'Model notes' : 'Workspace'}
+              </div>
             </div>
             {userPhotoURL ? (
               <img
                 src={userPhotoURL}
                 alt={userName}
-                className="h-10 w-10 rounded-full border border-[#E5E5E5] object-cover"
+                className="h-9 w-9 rounded-full border border-[#E5E5E5] object-cover sm:h-10 sm:w-10"
               />
             ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#171717] text-sm font-medium text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#171717] text-sm font-medium text-white sm:h-10 sm:w-10">
                 {userName.trim().charAt(0).toUpperCase() || 'N'}
               </div>
             )}
           </header>
 
-          <div className="flex min-h-0 flex-1 flex-col px-6 pb-6 pt-4 md:px-8">
+          <div className="flex min-h-0 flex-1 flex-col px-4 pb-4 pt-4 sm:px-6 sm:pb-6 md:px-8">
             <div className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col">
               {showIntroState ? (
                 <div className="flex flex-1 items-center justify-center">
@@ -398,23 +465,24 @@ export function ChatPage({
                     <p className="text-xs font-semibold tracking-[0.22em] text-[#8A7A62] uppercase">
                       New conversation
                     </p>
-                    <h1 className="mt-5 text-4xl font-semibold tracking-tight text-[#171717] md:text-6xl">
-                      Hello, <span className='bg-gradient-to-tr from-[#CA8A04] via-[#FACC15] to-[#A16207] bg-clip-text text-transparent'>{activeThread.intro}</span>
+                    <h1 className="mt-4 text-3xl font-semibold tracking-tight text-[#171717] sm:mt-5 sm:text-4xl md:text-6xl">
+                      Hello,{' '}
+                      <span className="bg-gradient-to-tr from-[#CA8A04] via-[#FACC15] to-[#A16207] bg-clip-text text-transparent">
+                        {activeThread.intro}
+                      </span>
                     </h1>
                   </div>
                 </div>
               ) : (
                 <div ref={messagesRef} className="scrollbar-thin flex-1 overflow-y-auto">
-                  <div className="mx-auto max-w-3xl space-y-6 pb-6">
+                  <div className="mx-auto max-w-3xl space-y-4 pb-4 sm:space-y-6 sm:pb-6">
                     {activeThread.messages.map((message) => (
                       <div
                         key={message.id}
-                        className={`flex ${
-                          message.role === 'user' ? 'justify-end' : 'justify-start'
-                        }`}
+                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-[85%] rounded-[1.6rem] px-5 py-4 text-[15px] leading-7 md:max-w-2xl ${
+                          className={`max-w-[90%] rounded-[1.35rem] px-4 py-3 text-sm leading-6 sm:max-w-[85%] sm:rounded-[1.6rem] sm:px-5 sm:py-4 sm:text-[15px] sm:leading-7 md:max-w-2xl ${
                             message.role === 'user'
                               ? 'rounded-br-md bg-[#171717] text-white'
                               : 'rounded-bl-md border border-[#E5E5E5] bg-white text-[#171717]'
@@ -428,11 +496,11 @@ export function ChatPage({
                 </div>
               )}
 
-              <div className="pt-4">
-                <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#E5E5E5] bg-white p-4">
+              <div className="pt-3 sm:pt-4">
+                <div className="mx-auto max-w-3xl rounded-[1.5rem] border border-[#E5E5E5] bg-white p-3 sm:rounded-[2rem] sm:p-4">
                   <textarea
                     ref={textareaRef}
-                    className="scrollbar-thin max-h-[220px] min-h-[56px] w-full resize-none overflow-y-auto border-0 bg-transparent px-1 text-base leading-7 text-[#171717] outline-none"
+                    className="scrollbar-thin max-h-[220px] min-h-[52px] w-full resize-none overflow-y-auto border-0 bg-transparent px-1 text-[15px] leading-6 text-[#171717] outline-none sm:min-h-[56px] sm:text-base sm:leading-7"
                     placeholder={activeThread.locked ? 'Model notes are read-only.' : 'Message'}
                     value={draft}
                     disabled={activeThread.locked}
@@ -444,15 +512,15 @@ export function ChatPage({
                       }
                     }}
                   />
-                  <div className="mt-4 flex items-center justify-between border-t border-[#E5E5E5] pt-3">
-                    <div className="text-sm text-[#737373]">
+                  <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#E5E5E5] pt-3 sm:mt-4">
+                    <div className="text-xs text-[#737373] sm:text-sm">
                       {activeThread.locked ? 'Reference only' : 'Shift + Enter for a new line'}
                     </div>
                     <button
                       type="button"
                       onClick={handleSendMessage}
                       disabled={activeThread.locked}
-                      className="flex h-11 w-11 items-center justify-center rounded-full bg-[#171717] hover:cursor-pointer text-white transition hover:bg-gradient-to-tr hover:from-[#CA8A04] hover:via-[#FACC15] hover:to-[#A16207] disabled:cursor-not-allowed disabled:opacity-45"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#171717] text-white transition hover:cursor-pointer hover:bg-gradient-to-tr hover:from-[#CA8A04] hover:via-[#FACC15] hover:to-[#A16207] disabled:cursor-not-allowed disabled:opacity-45 sm:h-11 sm:w-11"
                     >
                       <ArrowUp size={18} />
                     </button>
