@@ -81,7 +81,7 @@ function App() {
 
   useEffect(() => {
     let active = true
-    let unsubscribe = () => undefined
+    let unsubscribe: () => void = () => {}
 
     const initAuth = async () => {
       try {
