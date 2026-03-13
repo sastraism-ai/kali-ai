@@ -38,7 +38,7 @@ const features: Feature[] = [
 
 export function FeatureSection() {
   return (
-    <section id="features" className="mx-auto w-full max-w-7xl px-5 py-20 md:px-8 md:py-24">
+    <section id="features" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-5 sm:py-20 md:px-8 md:py-24">
       <div className="max-w-3xl">
         <p className="text-xs font-medium tracking-[0.14em] text-[#737373] uppercase">Features</p>
         <h2 className="mt-4 text-3xl font-semibold tracking-tight text-[#171717] md:text-5xl">
@@ -46,19 +46,17 @@ export function FeatureSection() {
         </h2>
       </div>
 
-      <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-8 grid gap-4 md:mt-10 md:grid-cols-2 lg:grid-cols-3">
         {features.map((feature, index) => (
           <article
             key={feature.title}
-            className={`rounded-2xl border p-6 transition-colors duration-500 ${
+            className={`rounded-2xl border p-5 transition-colors duration-500 sm:p-6 ${
               index === 1 || index === 4
                 ? 'border-[#E7C74C] bg-gradient-to-br from-[#FACC15] via-[#FEF3C7] to-[#FFF8E1] text-[#171717] shadow-[0_12px_32px_rgba(250,204,21,0.12)]'
                 : 'border-[#E5E5E5] bg-white'
             }`}
           >
-            <h3 className={`text-lg font-semibold ${index === 1 || index === 4 ? 'text-[#171717]' : 'text-[#171717]'}`}>
-              {feature.title}
-            </h3>
+            <h3 className="text-lg font-semibold text-[#171717]">{feature.title}</h3>
             <p className={`mt-3 text-sm leading-relaxed ${index === 1 || index === 4 ? 'text-[#404040]' : 'text-[#525252]'}`}>
               {feature.description}
             </p>

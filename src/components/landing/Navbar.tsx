@@ -7,12 +7,12 @@ type NavbarProps = {
 export function Navbar({ onGetStarted }: NavbarProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-[#E5E5E5] bg-[#FAFAFA]/95 backdrop-blur">
-      <nav className="flex h-16 w-full items-center justify-between px-5 md:px-8">
-        <a href="#" className="group flex items-center gap-2">
-          <span className="inline-flex h-12 w-12 items-center text-sm font-semibold text-[#171717]">
-            <img src={logo}/>
+      <nav className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-5 md:px-8">
+        <a href="#" className="group flex min-w-0 items-center gap-2">
+          <span className="inline-flex h-10 w-10 shrink-0 items-center text-sm font-semibold text-[#171717] sm:h-12 sm:w-12">
+            <img src={logo} alt="KALI" className="h-full w-full object-contain" />
           </span>
-          <span className="text-sm font-semibold tracking-wide text-[#171717]">
+          <span className="truncate text-sm font-semibold tracking-wide text-[#171717]">
             <span className="bg-gradient-to-tr">
               KALI <span className="bg-gradient-to-tr from-[#CA8A04] via-[#FACC15] to-[#A16207] bg-clip-text text-transparent">AI</span>
             </span>
@@ -34,14 +34,14 @@ export function Navbar({ onGetStarted }: NavbarProps) {
           </a>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <button className="hidden cursor-pointer rounded-full px-4 py-2 text-sm font-medium text-[#525252] transition hover:bg-[#F5F5F5] hover:text-[#171717] md:inline-flex">
             Contact sales
           </button>
           <button
             type="button"
             onClick={onGetStarted}
-            className="cursor-pointer rounded-full bg-[#171717] px-4 py-2 text-sm font-medium text-[#FAFAFA] transition-all duration-300 hover:bg-[#FACC15] hover:text-[#171717]"
+            className="cursor-pointer rounded-full bg-[#171717] px-3 py-2 text-xs font-medium text-[#FAFAFA] transition-all duration-300 hover:bg-[#FACC15] hover:text-[#171717] sm:px-4 sm:text-sm"
           >
             Get started
           </button>

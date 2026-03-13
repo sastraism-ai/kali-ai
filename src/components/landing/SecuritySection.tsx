@@ -8,8 +8,8 @@ const controls = [
 
 export function SecuritySection() {
   return (
-    <section id="security" className="mx-auto w-full max-w-7xl px-5 py-20 md:px-8 md:py-24">
-      <div className="grid gap-8 rounded-2xl border border-[#E5E5E5] bg-white p-8 md:grid-cols-[1.15fr_1fr] md:p-10">
+    <section id="security" className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-5 sm:py-20 md:px-8 md:py-24">
+      <div className="grid gap-6 rounded-2xl border border-[#E5E5E5] bg-white p-5 sm:gap-8 sm:p-8 md:grid-cols-[1.15fr_1fr] md:p-10">
         <div>
           <p className="text-xs font-medium tracking-[0.14em] text-[#737373] uppercase">Security</p>
           <h2 className="mt-4 text-3xl font-semibold tracking-tight text-[#171717] md:text-4xl">

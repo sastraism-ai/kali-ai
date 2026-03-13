@@ -64,15 +64,15 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
       </div>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(254,243,199,0.88),transparent_28%),radial-gradient(circle_at_82%_18%,rgba(255,255,255,0.8),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.5),rgba(250,250,250,0.7)_42%,rgba(255,255,255,0.64))]" />
 
-      <div className="relative mx-auto grid w-full max-w-7xl gap-10 px-5 pb-20 pt-16 md:grid-cols-[1.15fr_1fr] md:px-8 md:pb-24 md:pt-24">
+      <div className="relative mx-auto grid w-full max-w-7xl gap-8 px-4 pb-16 pt-12 sm:px-5 md:grid-cols-[1.15fr_1fr] md:gap-10 md:px-8 md:pb-24 md:pt-24">
         <div className="relative">
-          <p className="inline-flex rounded-full border border-[#E5E5E5] bg-white/75 px-3 py-1 text-xs font-medium text-[#404040]">
+          <p className="inline-flex rounded-full border border-[#E5E5E5] bg-white/75 px-3 py-1 text-[11px] font-medium text-[#404040] sm:text-xs">
             Powered by SARADHI AI (TARA)
           </p>
 
-          <h1 className="mt-6 min-h-[132px] max-w-3xl text-4xl leading-tight font-semibold tracking-tight text-[#171717] md:min-h-[152px] md:text-6xl">
+          <h1 className="mt-5 min-h-[112px] max-w-3xl text-3xl leading-tight font-semibold tracking-tight text-[#171717] sm:min-h-[132px] sm:text-4xl md:min-h-[152px] md:text-6xl">
             Bring{' '}
-            <span className="relative inline-block min-w-[22ch] align-baseline">
+            <span className="relative inline-block min-w-0 align-baseline sm:min-w-[22ch]">
               <span className="invisible">enterprise intelligence</span>
               <TextType
                 as="span"
@@ -85,12 +85,12 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
             into one simple workspace
           </h1>
 
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#525252]">
+          <p className="mt-5 max-w-2xl text-base leading-7 text-[#525252] sm:text-lg sm:leading-relaxed">
             KALI Model helps teams draft, analyze, and execute critical work faster with a
             clean, reliable assistant layer built for business operations.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <button
               type="button"
               onClick={onGetStarted}
@@ -104,7 +104,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
           </div>
         </div>
 
-        <aside className="relative rounded-2xl border border-[#E5E5E5] bg-white/90 p-6 shadow-[0_12px_40px_rgba(23,23,23,0.06)] md:p-8">
+        <aside className="relative rounded-2xl border border-[#E5E5E5] bg-white/90 p-4 shadow-[0_12px_40px_rgba(23,23,23,0.06)] sm:p-6 md:p-8">
           <div className="relative">
             <p className="text-sm font-medium text-[#171717]">Live KALI assistant preview</p>
 
@@ -115,14 +115,14 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                   key={`prompt-${activeDemoIndex}`}
                   as="p"
                   text={promptDemos[activeDemoIndex]}
-                  className="mt-2 min-h-14 text-sm leading-6 text-[#404040]"
+                  className="mt-2 min-h-16 text-sm leading-6 text-[#404040]"
                   typingSpeed={timings.promptTypingSpeed}
                   loop={false}
                 />
               </div>
 
               <div className="rounded-xl border border-[#E5E5E5] bg-[#FAFAFA] p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-[11px] font-semibold tracking-wide text-[#737373] uppercase">
                     KALI Output
                   </p>
@@ -132,7 +132,7 @@ export function HeroSection({ onGetStarted }: HeroSectionProps) {
                   key={`output-${activeDemoIndex}`}
                   as="p"
                   text={outputDemos[activeDemoIndex]}
-                  className="mt-2 min-h-24 text-sm leading-6 text-[#404040]"
+                  className="mt-2 min-h-28 text-sm leading-6 text-[#404040]"
                   typingSpeed={timings.outputTypingSpeed}
                   initialDelay={timings.outputDelay}
                   loop={false}
