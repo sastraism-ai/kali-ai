@@ -2,7 +2,9 @@ import { initializeApp } from 'firebase/app'
 import {
   GoogleAuthProvider,
   getAuth,
+  getRedirectResult,
   onAuthStateChanged,
+  signInWithRedirect,
   signInWithPopup,
   signOut,
   type User,
@@ -45,6 +47,27 @@ function assertFirebaseReady() {
   }
 }
 
+function shouldPreferRedirect() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const isTouchDevice = window.matchMedia?.('(pointer: coarse)').matches ?? false
+  const isMobileUserAgent =
+    /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(navigator.userAgent)
+
+  return isTouchDevice || isMobileUserAgent
+}
+
+function shouldFallbackToRedirect(error: unknown) {
+  if (!error || typeof error !== 'object' || !('code' in error)) {
+    return false
+  }
+
+  const code = String(error.code)
+  return code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment'
+}
+
 export function isFirebaseConfigured() {
   return hasFirebaseConfig
 }
@@ -60,10 +83,31 @@ export function subscribeToAuth(callback: (user: AuthUser | null) => void) {
   })
 }
 
+export async function finishRedirectSignIn() {
+  assertFirebaseReady()
+  const result = await getRedirectResult(auth!)
+  return result ? mapUser(result.user) : null
+}
+
 export async function signInWithGoogle() {
   assertFirebaseReady()
-  const result = await signInWithPopup(auth!, provider)
-  return mapUser(result.user)
+
+  if (shouldPreferRedirect()) {
+    await signInWithRedirect(auth!, provider)
+    return null
+  }
+
+  try {
+    const result = await signInWithPopup(auth!, provider)
+    return mapUser(result.user)
+  } catch (error) {
+    if (shouldFallbackToRedirect(error)) {
+      await signInWithRedirect(auth!, provider)
+      return null
+    }
+
+    throw error
+  }
 }
 
 export async function signOutUser() {

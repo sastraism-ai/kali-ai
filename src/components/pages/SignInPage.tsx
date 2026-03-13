@@ -35,12 +35,14 @@ export function SignInPage({ onBack, onSuccess }: SignInPageProps) {
   const handleGoogleSignIn = async () => {
     try {
       const user = await signInWithGoogle()
-      onSuccess(user)
+      if (user) {
+        onSuccess(user)
+      }
     } catch (error) {
       console.error(error)
       window.alert(
         firebaseReady
-          ? 'Google sign-in failed. Check your Firebase provider setup and authorized domains.'
+          ? 'Google sign-in failed. Check your Firebase provider setup, authorized domains, and browser popup settings.'
           : 'Firebase is not configured yet. Add your VITE_FIREBASE_* values first.',
       )
     }
